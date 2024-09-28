@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Query
 from mm_std import utc_delta
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, Response
 
 from app.app import App
 from app.models import Status
@@ -35,11 +37,15 @@ def init(app: App) -> APIRouter:
         return app.db.proxy.delete_many({"source": pk})
 
     @router.get("/proxies/live")
-    def get_live_proxies(sources: str | None = None):
+    def get_live_proxies(sources: str | None = None, format_: Annotated[str, Query(alias="format")] = "json"):
         query: dict[str, object] = {"status": Status.OK, "last_ok_at": {"$gt": utc_delta(minutes=-5)}}
         if sources:
             query = {"source": {"$in": sources.split(",")}}
         proxies = app.db.proxy.find(query)
+
+        if format_ == "text":
+            return Response(content="\n".join([p.url for p in proxies]), media_type="text/plain")
+
         return {"proxies": [p.url for p in proxies]}
 
     @router.get("/proxies/{pk}")
