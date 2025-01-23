@@ -25,7 +25,7 @@ class SetItemsForm(Form):  # type: ignore[misc]
     def parse_items(self) -> list[str]:
         result = []
         for line in self.data["items"].strip().split("\n"):
-            line = line.strip()
+            line = line.strip()  # noqa: PLW2901
             if line:
                 result.append(line)
         return pydash.uniq(result)

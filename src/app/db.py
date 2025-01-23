@@ -5,7 +5,7 @@ from app.models import Proxy, Source
 
 
 class DB(BaseDB):
-    def __init__(self, database: DatabaseAny):
+    def __init__(self, database: DatabaseAny) -> None:
         super().__init__(database)
         self.source: MongoCollection[Source] = Source.init_collection(database)
         self.proxy: MongoCollection[Proxy] = Proxy.init_collection(database)

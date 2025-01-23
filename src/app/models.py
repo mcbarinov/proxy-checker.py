@@ -82,9 +82,7 @@ class Proxy(MongoModel):
         if self.last_ok_at and self.last_ok_at < utc_delta(hours=-1):
             return True
         # delete me if it was never ok for 1 hour
-        if self.last_ok_at is None and self.created_at < utc_delta(hours=-1):
-            return True
-        return False
+        return bool(self.last_ok_at is None and self.created_at < utc_delta(hours=-1))
 
     @classmethod
     def new(cls, source: str, url: str) -> Proxy:

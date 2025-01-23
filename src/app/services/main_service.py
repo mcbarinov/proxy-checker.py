@@ -1,3 +1,4 @@
+import contextlib
 import re
 
 from mm_std import ConcurrentTasks, hr, synchronized, utc_delta, utc_now
@@ -31,10 +32,8 @@ class MainService(AppService):
 
         proxies = [Proxy.new(pk, url) for url in urls]
         if proxies:
-            try:
+            with contextlib.suppress(BulkWriteError):
                 self.db.proxy.insert_many(proxies, ordered=False)
-            except BulkWriteError:
-                pass
 
         updated = {"proxies_count": self.db.proxy.count({"source": pk}), "checked_at": utc_now()}
         self.db.source.set_by_id(pk, updated)
@@ -90,7 +89,7 @@ class MainService(AppService):
 def parse_ipv4_addresses(data: str) -> set[str]:
     result = set()
     for line in data.split("\n"):
-        line = line.lower().strip()
+        line = line.lower().strip()  # noqa: PLW2901
         m = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", line)
         if m:
             result.add(line)
